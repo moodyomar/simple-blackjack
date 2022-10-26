@@ -6,11 +6,10 @@ const App = () => {
   const [storage, setStorage] = useState({});
   const [playerHand, setPlayerHand] = useState(0);
   const [playerNotPlaying, setPlayerNotPlaying] = useState(false);
-  const [gameOn, setGameOn] = useState(false);
 
   const newGame = async () => {
-    setGameOn(true)
     setSumOfCards(0)
+    setSumOfDealerCards(0)
     setPlayerNotPlaying(false)
     try {
       const res = await fetch('/new_deck')
@@ -45,13 +44,17 @@ const App = () => {
   const stand = (hand) => {
     setPlayerHand(hand)
     setPlayerNotPlaying(true)
-
-    if(gameOn){
-      dealerTurn()
-      console.log(storage);
-    }
-
   }
+
+  useEffect(() => {
+  
+    if(playerNotPlaying){
+      setTimeout(() => {
+        dealerTurn()
+      }, [400])
+    }
+  
+  },[playerHand,playerNotPlaying,storage] )
 
   const dealerTurn = async () => {
     try {
@@ -61,20 +64,17 @@ const App = () => {
     } catch (err) {
       console.error("Error from fetching API", err);
     }
-    stand()
   }
 
   const isBlackJack = (drawn_cards) => {
     let sum = drawn_cards.reduce((a, b) => a + b)
     if (sum === 21) {
-      setGameOn(false)
       setTimeout(() => {
         alert("BLACK JACK!!!")
         newGame()
       }, [400])
     }
     else if (sum > 21) {
-      setGameOn(false)
       setTimeout(() => {
         alert("Game Over - Above 21")
         newGame()
@@ -93,6 +93,7 @@ const App = () => {
 
     if (storage.dealer_cards?.length > 1) {
       let sum = storage.dealer_cards_values.reduce((a, b) => a + b)
+      console.log('dealer cards changed');
       setSumOfDealerCards(sum)
       isBlackJack(storage.dealer_cards_values)
     }
@@ -135,8 +136,8 @@ const App = () => {
             {storage.dealer_cards?.map(card =>
               <img key={card.code} src={card.image} alt="" className='w-25 mt-5 d-flex' />
             )}
-            {storage.dealer_cards?.length > 0 && sumOfCards !== 0 &&
-              <h1 className="text-center mt-5">{storage.dealer_cards_values.reduce((a, b) => a + b)}</h1>
+            {storage.dealer_cards?.length > 0 && sumOfDealerCards !== 0 &&
+              <h1 className="text-center mt-5">{sumOfDealerCards}</h1>
             }
           </div>
         </div>
