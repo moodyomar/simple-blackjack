@@ -9,54 +9,67 @@ storage = {
     'current_deck':'',
     'current_pile':'',
     'remaining_cards_in_pile':'',
+    'dealer_cards':[],
+    'dealer_cards_values':[],
+    'cards_values':[],
     'cards':[]
 }
 
 ### New Deck of cards
 def new_deck():
+    storage['cards'] = []
+    storage['cards_values'] = []
+    storage['dealer_cards'] = []
+    storage['dealer_cards_values'] = []
     deck = requests.get(f"{api['endpoint']}/{api['new_deck']}").json()
     storage['current_deck'] = deck['deck_id']
+    return storage
  
 
 ### Shuffle Cards
 def shuffle_cards():
     # /shuffle/?remaining=true
-    return requests.get(f'{api["endpoint"]}/{storage["current_deck"]}/shuffle')
+    return requests.get(f'{api["endpoint"]}/{storage["current_deck"]}/shuffle').json()
 
 
 ### Draw a Card
-#    'value': "KING",
-#    'suit': "DIAMONDS"
-#    'image': link
 def draw_cards(count):
     response = requests.get(f'{api["endpoint"]}/{storage["current_deck"]}/draw/?count={count}').json()
-    data = {
-        'cards':response['cards'][0],
-        'remaining':response['remaining']
-    }
-    return data
+    card = response['cards'][0]
+    card_value = what_is_card_value(card)
+    storage['cards'].append(card)
+    storage['cards_values'].append(card_value)
+    return storage
 
+def draw_cards_for_dealer():
+    response = requests.get(f'{api["endpoint"]}/{storage["current_deck"]}/draw/?count=1').json()
+    dealer_card = response['cards'][0]
+    dealer_card_value = what_is_card_value(dealer_card)
+    storage['dealer_cards'].append(dealer_card)
+    storage['dealer_cards_values'].append(dealer_card_value)
+    return storage
+    
 
 ### Add player cards to a pile
 def add_cards_to_pile(cards):
     pile = requests.get(f'{api["endpoint"]}/{storage["current_deck"]}/pile/hand_pile/add/?cards={cards}')
     storage['current_pile'] = list(pile.json()['piles'].keys())[0]
+    return storage
 
 
-### Check if its Black Jack
-def is_blackjack(player_cards):
-    if player_cards != 21:
-        return False
-    else: 
-        return True
-    
-        
+def deal_with_ace():
+    if sum(storage['cards_values']) < 11:
+        return 11
+    return 1
+
+
 ### Check card value
 def what_is_card_value(card):
     not_numeric_values = {
-        'KING':'13',
-        'QUEEN':'12',
-        'JACK':'11'
+        'KING':'10',
+        'QUEEN':'10',
+        'JACK':'10',
+        'ACE':deal_with_ace(),
     }
     
     if card['value'] not in not_numeric_values:
@@ -68,11 +81,3 @@ def what_is_card_value(card):
 ### List cards in pile
 def show_cards_in_pile(pile):
     return requests.get(f'{api["endpoint"]}/{storage["current_deck"]}/pile/{pile}/list').json()['piles'][pile]['cards']
-
-
-
-new_deck()
-data = draw_cards(1)
-card = data['cards']['code']
-add_cards_to_pile(card)
-print(show_cards_in_pile(storage["current_pile"]))
