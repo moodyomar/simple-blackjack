@@ -14,7 +14,7 @@ jobs:
 
     runs-on: ubuntu-latest
     env:
-      IMG_VERSION: '0.9.0'
+      IMG_VERZN: '0.9.0'
 
     steps:
 
@@ -40,12 +40,12 @@ jobs:
       id: bump_version
       uses: christian-draeger/increment-semantic-version@1.0.2
       with:
-        current-version: $IMG_VERSION
+        current-version: $IMG_VERZN
         version-fragment: 'major'
 
     - name: Build Backend image
       run: |
-        docker build -t ${{secrets.DOCKERHUB_USERNAME}}/blackjack-backend:v$IMG_VERSION  .
+        docker build -t ${{secrets.DOCKERHUB_USERNAME}}/blackjack-backend:v${{ steps.bump_version.outputs.next-version }}  .
         docker run -d --name backend -p 3000:3000 ${{secrets.DOCKERHUB_USERNAME}}/blackjack-backend:v${{ steps.bump_version.outputs.next-version }}  .
 
 
