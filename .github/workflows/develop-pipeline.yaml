@@ -30,6 +30,7 @@ jobs:
       run: |
         python3 -m pip install --upgrade pip
         pip install flake8
+        echo $IMG_VERZN
 
     - name: Running linting tests
       run: |
@@ -40,7 +41,7 @@ jobs:
       id: bump_version
       uses: christian-draeger/increment-semantic-version@1.0.2
       with:
-        current-version: $IMG_VERZN
+        current-version: '0.9.0'
         version-fragment: 'major'
 
     - name: Build Backend image
