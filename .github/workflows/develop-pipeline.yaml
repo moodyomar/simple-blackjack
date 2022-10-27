@@ -47,7 +47,7 @@ jobs:
     - name: Build Backend image
       run: |
         docker build -t ${{secrets.DOCKERHUB_USERNAME}}/blackjack-backend:v${{ steps.bump_version.outputs.next-version }}  .
-        docker run -d --name backend -p 3000:3000 ${{secrets.DOCKERHUB_USERNAME}}/blackjack-backend:v${{ steps.bump_version.outputs.next-version }}  .
+        docker run -d --name backend -p 3000:3000 ${{secrets.DOCKERHUB_USERNAME}}/blackjack-backend:v${{ steps.bump_version.outputs.next-version }}
 
 
     - name: Run Smoke Tests on Backend
