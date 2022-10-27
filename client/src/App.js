@@ -47,14 +47,16 @@ const App = () => {
   }
 
   useEffect(() => {
-  
-    if(playerNotPlaying){
-      setTimeout(() => {
-        dealerTurn()
-      }, [400])
+
+    if (playerNotPlaying) {
+      if (sumOfDealerCards < 21 && sumOfDealerCards < sumOfCards) {
+        setTimeout(() => {
+          dealerTurn()
+        }, [600])
+      }
     }
-  
-  },[playerHand,playerNotPlaying,storage] )
+
+  }, [playerHand, playerNotPlaying, storage])
 
   const dealerTurn = async () => {
     try {
