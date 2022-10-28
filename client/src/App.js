@@ -4,7 +4,7 @@ const App = () => {
   const [sumOfCards, setSumOfCards] = useState(0);
   const [sumOfDealerCards, setSumOfDealerCards] = useState(0);
   const [storage, setStorage] = useState({});
-  const [playerHand, setPlayerHand] = useState(0);
+  const [playerHand, setPlayerHand] = useState();
   const [playerNotPlaying, setPlayerNotPlaying] = useState(false);
 
   const newGame = async () => {
@@ -49,10 +49,12 @@ const App = () => {
   useEffect(() => {
 
     if (playerNotPlaying) {
-      if (sumOfDealerCards < 21 && sumOfDealerCards < sumOfCards) {
+      if (sumOfDealerCards < 21 && sumOfDealerCards <= sumOfCards) {
         setTimeout(() => {
           dealerTurn()
-        }, [600])
+        }, [800])
+      }else{
+        isBlackJack(storage.dealer_cards_values)
       }
     }
 
@@ -63,6 +65,7 @@ const App = () => {
       const res = await fetch('/draw_cards_for_dealer')
       const storage = await res.json()
       setStorage(storage)
+      setSumOfDealerCards(storage.dealer_cards_values.reduce((a, b) => a + b));
     } catch (err) {
       console.error("Error from fetching API", err);
     }
@@ -74,13 +77,19 @@ const App = () => {
       setTimeout(() => {
         alert("BLACK JACK!!!")
         newGame()
-      }, [400])
+      }, [500])
     }
     else if (sum > 21) {
       setTimeout(() => {
-        alert("Game Over - Above 21")
+        alert("Game Over")
         newGame()
-      }, [400])
+      }, [500])
+    }
+    else if(sumOfDealerCards > sumOfCards){
+      setTimeout(() => {
+        alert("Dealer WON !")
+        newGame()
+      }, [500])
     }
 
   }
@@ -91,13 +100,6 @@ const App = () => {
       let sum = storage.cards_values.reduce((a, b) => a + b)
       setSumOfCards(sum)
       isBlackJack(storage.cards_values)
-    }
-
-    if (storage.dealer_cards?.length > 1) {
-      let sum = storage.dealer_cards_values.reduce((a, b) => a + b)
-      console.log('dealer cards changed');
-      setSumOfDealerCards(sum)
-      isBlackJack(storage.dealer_cards_values)
     }
 
   }, [storage, storage.cards, storage.dealer_cards_values])
@@ -118,28 +120,28 @@ const App = () => {
           </>
         }
       </div>
-      <div className="row  m-3">
+      <div className="row bg-success p-4 mt-2">
         <div className="row d-flex justify-content-center">
           {storage.cards?.map(card =>
-            <img key={card.code} src={card.image} alt="" className='w-25 mt-5 d-flex' />
+            <img key={card.code} src={card.image} alt="" className='w-25 mt-3 d-flex' />
           )}
         </div>
         {storage.cards?.length > 0 && sumOfCards !== 0 &&
-          <h1 className="text-center mt-4 mb-5">{sumOfCards}</h1>
+          <h1 className="text-center mt-4 mb-5 text-light">{sumOfCards}</h1>
         }
       </div>
       {playerHand &&
-        <div className="row  m-3">
+        <div className="row p-4 mt-2 bg-success">
           <hr />
           {storage.cards?.length > 0 && sumOfCards !== 0 &&
-            <h1 className="text-center mt-4">Dealer Cards</h1>
+            <h1 className="text-center mt-4 text-white">Dealer Cards</h1>
           }
           <div className="row d-flex justify-content-center">
             {storage.dealer_cards?.map(card =>
-              <img key={card.code} src={card.image} alt="" className='w-25 mt-5 d-flex' />
+              <img key={card.code} src={card.image} alt="" className='w-25 mt-3 d-flex' />
             )}
             {storage.dealer_cards?.length > 0 && sumOfDealerCards !== 0 &&
-              <h1 className="text-center mt-5">{sumOfDealerCards}</h1>
+              <h1 className="text-center mt-5 text-light">{sumOfDealerCards}</h1>
             }
           </div>
         </div>
